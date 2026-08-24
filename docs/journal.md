@@ -47,7 +47,9 @@ Comparaison des performances:
 | Aldi | 11683 |
 | Hacendado | 10490 |
 | Tesco | 10282 |
-| Delhaize | 9741 |  
+| Delhaize | 9741 | 
+| Jumbo | 9002 |
+
 
 **Parquet + DataFrame:**
 |Marque | Nbre  |
@@ -61,6 +63,7 @@ Comparaison des performances:
 | Hacendado | 10658 |
 | Auchan | 10590 |
 | Tesco | 10503 |
+| Delhaize | 9918 |
 
 **Le taux de manquants sur les nutriments clés (energy_100g, sugars_100g, salt_100g ) ?**  
 **CSV + DataFrame:**
