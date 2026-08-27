@@ -7,6 +7,7 @@ feat/petite_description_de_la_feature
 Courte description de la feature
 
 -- Taille des PR --  
+Une PR petite, cohérente et facile à reviewer.  
 
 -- Conditions pour valider une PR --  
 tout les participants de l'équipe doivent valider la PR  
