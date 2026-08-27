@@ -4,6 +4,7 @@
 feat/petite_description_de_la_feature
 
 -- Messages de commit --  
+Courte description de la feature
 
 -- Taille des PR --  
 
