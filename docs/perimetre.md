@@ -1,15 +1,31 @@
-***TP2 :***  
-REJETÉE | CONSERVÉE | À REFORMATER / REJET EN L'ÉTAT: Par distributions, cardinalités, taux de manquants  
+## 1. Contexte et objectif du périmètre
+
+NutriScope a pour vocation d'accompagner les consommateurs lors de leurs courses alimentaires en magasin :
+1. En analysant la qualité nutritionnelle d'un produit scanné via son code-barres.
+2. En proposant des alternatives plus saines et comparables au sein du même rayon.
+
+Face à la volumétrie brute du catalogue Open Food Facts (~7 Go, 111 colonnes, plusieurs millions de lignes), l'objectif de ce document est de formaliser un **périmètre cohérent et exempt de bruit**, aligné sur les contraintes fonctionnelles et techniques du cahier des charges.
+
+---
+
+## 2. Périmètre géographique et volumétrie globale
+
+Le périmètre cible retenu est restreint au **marché français** via le filtre :
+`countries_tags => 'en:france'`.
+
+### Résultats du profiling initial (Périmètre France) :
+* **Nombre total de fiches produits brutes :** 1 247 336
+* **Codes-barres uniques :** 1 247 309
+* **Collisions de codes-barres (doublons) :** 27 codes (54 lignes concernées, soit 0,004 % du catalogue).
+* **Part des produits avec Nutri-Score officiel (A à E) :** 37,18 % (463 757 références).
+* **Part des produits non exploitables pour le score :** 62,82 % (783 579 références réparties entre `UNKNOWN`, `NOT-APPLICABLE` et `NULL`).
+
+---
+
+## 3 Analyse unitaire des colonnes par distributions, cardinalités, taux de manquants 
+
+REJETÉE | CONSERVÉE | À REFORMATER / REJET EN L'ÉTAT:  
 → Périmètre: colonne "code" dédoublonnées, filtre "en:france"   
-
-**SERT LE PRODUIT**
-
-
-**NE SERT PAS LE PRODUIT**
-
-
-**BRUIT**
-
 
 **additives_n** (numérique)  
 REJETÉE. Avec 71.2% de valeurs manquantes
@@ -42,6 +58,7 @@ CONSERVÉE. Type [liste] exploitable avec 33 éléments uniques.
 REJETÉE. Avec 47.2% de valeurs manquantes
 
 **code**  
+identifiant unique
 
 **compared_to_category** (categoriel)  
 REJETÉE. Avec 51.1% de valeurs manquantes
@@ -56,6 +73,7 @@ CONSERVÉE. Le taux de complétude (100.0%) et la variance sont optimaux.
 CONSERVÉE. Type [liste] exploitable avec 394574 éléments uniques.
 
 **countries_tags**  
+filtre pays
 
 **created_t** (numerique)  
 CONSERVÉE. Le taux de complétude (100.0%) et la variance sont optimaux.
@@ -336,125 +354,60 @@ REJETÉE. Avec 99.4% de valeurs manquantes
 **with_sweeteners** (numerique)  
 REJETÉE. Avec 100.0% de valeurs manquantes
 
-## 1. Contexte et objectif du périmètre
-
-NutriScope a pour vocation d'accompagner les consommateurs lors de leurs courses alimentaires en magasin :
-1. En analysant la qualité nutritionnelle d'un produit scanné via son code-barres.
-2. En proposant des alternatives plus saines et comparables au sein du même rayon (moteur de substitution).
-3. En répondant aux interrogations nutritionnelles via un assistant conversationnel outillé (RAG).
-
-Face à la volumétrie brute du catalogue mondial Open Food Facts (~7 Go, 111 colonnes, plusieurs millions de lignes), l'objectif de ce document est de formaliser un **périmètre d'ingestion maîtrisé, cohérent et exempt de bruit**, aligné sur les contraintes fonctionnelles et techniques du MVP (V1).
-
----
-
-## 2. Périmètre géographique et volumétrie globale
-
-Le périmètre cible retenu pour la V1 est strictement restreint au **marché français** via le filtre vectorisé :
-`list_contains(countries_tags, 'en:france')`.
-
-### Résultats du profiling initial (Périmètre France) :
-* **Nombre total de fiches produits brutes :** 1 247 336
-* **Codes-barres uniques :** 1 247 309
-* **Collisions de codes-barres (doublons) :** 27 codes (54 lignes concernées, soit 0,004 % du catalogue).
-* **Part des produits avec Nutri-Score officiel (A à E) :** 37,18 % (463 757 références).
-* **Part des produits non exploitables pour le score :** 62,82 % (783 579 références réparties entre `UNKNOWN`, `NOT-APPLICABLE` et `NULL`).
-
----
-
-## 3. Rayons et catégories retenus (5 à 8 catégories cibles)
-
-Pour garantir la pertinence du moteur de recommandation nutritionnelle et éviter les suggestions aberrantes, le catalogue NutriScope V1 est restreint à **6 rayons du quotidien** présentant une complétude nutritionnelle supérieure à 80 % :
-
-| # | Rayon cible | Tag canonique Open Food Facts | Volumétrie France | Complétude Nutri-Score (%) | Justification métier & IA |
-|---|---|---|---|---|---|
-| 1 | **Biscuits et gâteaux** | `en:biscuits-and-cakes` | 39 849 | **90,2 %** | Forte dispersion de notes, cas idéal pour la substitution sucrée. |
-| 2 | **Plats préparés** | `en:meals` | 45 666 | **89,2 %** | Répond au besoin du persona « parent pressé », forte disparité en sel et graisses saturées. |
-| 3 | **Charcuterie & viandes préparées** | `en:prepared-meats` | 37 946 | **88,3 %** | Segment très demandé avec enjeux critiques sur le sel et les nitrites. |
-| 4 | **Snacks sucrés** | `en:sweet-snacks` | 90 947 | **85,7 %** | Large volume pour l'entraînement des modèles de classification et segmentation. |
-| 5 | **Céréales et dérivés** | `en:cereals-and-potatoes` | 50 203 | **84,9 %** | Indispensable pour les produits du petit-déjeuner et féculents du quotidien. |
-| 6 | **Produits laitiers** | `en:dairies` | 59 861 | **83,9 %** | Rayon phare du modèle de substitution (yaourts, desserts lactés, fromages). |
-
-**Total cumulé sur le périmètre cible :** ~324 000 fiches brutes.
-
 ---
 
 ## 4. Inventaire des colonnes : retenues vs écartées
 
-Sur les 111 colonnes du schéma Parquet source, nous appliquons une réduction drastique pour ne conserver que les attributs essentiels aux fonctionnalités cibles :
+Sur les 111 colonnes du schéma Parquet source, nous ne conserverons que les colonnes essentielles aux fonctionnalités cibles :
 
 ### Colonnes conservées (14 colonnes)
 
 | Colonne | Type Parquet | Complétude France | Usage fonctionnel NutriScope |
 |---|---|---|---|
-| `code` | `string` | 100,00 % | Clé primaire SQL, recherche par code-barres / scan. |
-| `product_name` | `list<struct>` / `string` | 100,00 % | Affichage du nom produit dans l'application et recherche texte. |
-| `brands` | `string` | 56,47 % | Filtrage par marque et détection des marques de distributeurs. |
-| `categories_tags` | `list<string>` | 53,02 % | Segmentation par rayon et garde-fous du moteur de substitution. |
-| `nutriscore_grade` | `string` | 97,99 % | Affichage du score officiel et cible d'apprentissage supervisé. |
-| `nutriments` | `list<struct>` | 75,17 % | Extraction des 8 macro-nutriments clés (énergie, sucres, sel, etc.). |
-| `images` | `list<struct>` | 100,00 % | Récupération des URLs d'images pour le front et le dataset Vision (Keras). |
-| `ingredients_text` | `list<struct>` / `string` | 100,00 % | Contexte textuel pour le RAG et détection des ingrédients majeurs. |
-| `allergens_tags` | `list<string>` | 98,00 % | Alertes allergènes dans l'application et règles de filtrage. |
-| `quantity` | `string` | ~60,00 % | Affichage du conditionnement (ex. « 500 g »). |
+| `code` | `string` | 100 % | Identifiant unique du produit, recherche par code-barres / scan. |
+| `countries_tags` | `list` | 100 % | Le pays où le produit est vendu. |
+| `product_name` | `list` / `string` | 100 % | Affichage du nom commercial du produit. |
+| `brands` | `string` | 56,47 % | Affichage de la marque. |
+| `brands_tags` | `list` | 56,47 % | Version standardisée de la marque. |
+| `categories` | `list` | 48,5 % | Catégorie de l'aliment. |
+| `categories_tags` | `list` | 53,02 % | Version standardisée de la catégorie, facilite les regroupements. |
+| `nutriscore_grade` | `string` | 97,99 % | Affichage du score (A → E). |
+| `nutriscore_score` | `int` | 37,2 % | Le score brut calculé (plus il est bas, meilleur est le produit). |
+| `nutriments` | `list` | 75,17 % | Extraction des 8 nutriments clés (énergie, sucres, sel, etc.). |
+| `images` | `list` | 100 % | Récupération des images pour le front. |
+| `ingredients_text` | `list` / `string` | 100 % | La liste des ingrédients. |
+| `allergens_tags` | `list` | 98 % | Alertes allergènes pour les produits. |
+| `quantity` | `string` | ~60 % | Affichage du conditionnement (ex. « 500 g »). |
 
 ### Colonnes explicitement écartées et justifications
 
-| Colonne(s) | Statut | Justification de l'exclusion |
-|---|---|---|
-| `countries`, `countries_tags` | Écartées post-filtrage | Utilisées uniquement pour le filtre initial `en:france`, inutiles dans la base applicative cible. |
-| `additives_n`, `additives_tags` | Écartées en V1 | Complexifie la modélisation V1 ; reporté en V2 pour l'indice NOVA / additifs. |
-| `creator`, `editors`, `last_modified_by` | Écartées | Métadonnées d'audit collaboratif internes à Open Food Facts sans valeur pour l'utilisateur final. |
-| `environmental_score_*` (Eco-Score) | Écartées | Hors périmètre nutritionnel de la V1 (focus 100 % Nutri-Score). |
-| `packaging_*`, `packagings` | Écartées | Complétude trop faible et inutile pour l'algorithme de substitution. |
-| `ciqual_food_code`, `agribalyse_*` | Écartées | Métadonnées agronomiques hors du besoin fonctionnel immédiat. |
+| Colonne(s) | Justification de l'exclusion |
+|---|---|
+| `creator`, `editors`, `last_modified_by` | Pas utile. |
+| `environmental_score_*` (Eco-Score) | Hors périmètre nutritionnel. |
+| `packaging_*`, `packagings` | Complétude trop faible (trop de manquants). |
+| `ciqual_food_code`, `agribalyse_*` | Pas utile. |
 
 ---
 
-## 5. Règles de nettoyage et seuil de complétude minimale par produit
+## 5. Rayons et catégories retenus (5 à 8 catégories cibles)
 
-Pour qu'un produit soit injecté dans la base PostgreSQL (TP 4) et dans le pipeline de données propres (Jalon J3), il doit valider les critères stricts suivants :
+Pour garantir la pertinence du moteur de recommandation nutritionnelle et éviter les suggestions aberrantes, le catalogue NutriScope est restreint à **6 rayons du quotidien** présentant une complétude nutritionnelle supérieure à 80 % :
 
-### A. Règle d'éligibilité minimale (Filtre dur)
-Un produit est conservé si et seulement si :
-1. Il appartient à l'une des **6 catégories retenues**.
-2. Son champ `code` est non nul et valide (format EAN-8 / EAN-13 numérique).
-3. Le champ `product_name` est non vide.
-4. Au moins **4 des 6 nutriments obligatoires** sont renseignés : `energy_100g`, `sugars_100g`, `fat_100g`, `saturated_fat_100g`, `proteins_100g`, `salt_100g`.
-
-### B. Bornage des valeurs nutritionnelles aberrantes
-Le profiling ayant révélé des valeurs impossibles (énergie jusqu'à $10^{16}\text{ kcal}$, sucres $> 10^{30}\text{ g}$), les bornes physiologiques suivantes sont appliquées par `src/cleaning.py` :
-* $0 \le \text{énergie (kcal)} \le 900\text{ kcal / 100 g}$ (900 kcal étant le plafond théorique de l'huile pure).
-* $0 \le \text{sucres} \le 100\text{ g / 100 g}$.
-* $0 \le \text{matières grasses} \le 100\text{ g / 100 g}$.
-* $0 \le \text{acides gras saturés} \le \text{matières grasses}$.
-* $0 \le \text{protéines} \le 100\text{ g / 100 g}$.
-* $0 \le \text{sel} \le 100\text{ g / 100 g}$ (et cohérence avec sodium : $\text{sel} \approx \text{sodium} \times 2,5$).
-* Somme des macro-nutriments : $\text{lipides} + \text{glucides} + \text{protéines} + \text{sel} \le 105\text{ g}$ (tolérance de 5 % pour incertitude de mesure).
-
-### C. Arbitrage des doublons de codes-barres
-Pour les 27 collisions détectées sur la colonne `code` :
-* Règle appliquée : conservation de la ligne ayant le taux de complétude nutritionnelle le plus élevé ; en cas d'égalité, conservation de la fiche la plus récente (`last_modified_t`).
+| # | Rayon cible | Tag Open Food Facts | Volumétrie France | Complétude Nutri-Score (%) | Justification métier & IA |
+|---|---|---|---|---|---|
+| 1 | **Biscuits et gâteaux** | `en:biscuits-and-cakes` | 39 849 | **90,2 %** | Forte dispersion de notes, cas idéal pour la substitution sucrée. |
+| 2 | **Plats préparés** | `en:meals` | 45 666 | **89,2 %** | Forte disparité en sel et graisses saturées. |
+| 3 | **Charcuterie & viandes préparées** | `en:prepared-meats` | 37 946 | **88,3 %** | Le sel et les nitrites. |
+| 4 | **Snacks sucrés** | `en:sweet-snacks` | 90 947 | **85,7 %** | Sucre. |
+| 5 | **Céréales et dérivés** | `en:cereals-and-potatoes` | 50 203 | **84,9 %** | Produits du petit-déjeuner et féculents. |
+| 6 | **Produits laitiers** | `en:dairies` | 59 861 | **83,9 %** | Yaourts, desserts lactés, fromages. |
 
 ---
 
-## 6. Limites connues du jeu de données V1
-
-1. **Biais de représentativité :** La surreprésentation des produits de classes D et E (20,41 % cumulés contre seulement 9,03 % pour A et B) reflète la composition du marché des produits transformés mais nécessitera un échantillonnage stratifié lors du machine learning (TP 14).
-2. **Saisie collaborative :** Des erreurs résiduelles sur les libellés de marques composées (ex. `"Marque A, Marque B"`) subsistent et feront l'objet d'une normalisation syntaxique (`string_split` / regex).
-3. **Absence de Nutri-Score calculé sur 62,82 % du catalogue brut :** Ces produits ne seront pas utilisés pour l'apprentissage supervisé, mais pourront bénéficier de la prédiction du modèle NutriScope une fois celui-ci entraîné.
-
----
-
-## 7. Mentions légales et crédits
+## 6. Mentions légales et crédits
 
 Conformément aux exigences de réutilisation :
 * Les données nutritionnelles et textuelles sont issues d'**Open Food Facts** et exploitées sous licence **ODbL** (Open Database License).
 * Les visuels associés sont hébergés via le bucket public Open Food Facts sous licence **CC-BY-SA 3.0**.
 * Tout jeu de données dérivé ou enrichi par NutriScope sera redistribué sous licence compatible.
-
-
-
-| Information   | Produits renseignés |  Complétude |
-| ------------- | ------------------: | ----------: |
-| `ingredients` | 358 911 / 1 247 336 | **28,77 %** |
-| `nutriments`  | 937 673 / 1 247 336 | **75,17 %** |
