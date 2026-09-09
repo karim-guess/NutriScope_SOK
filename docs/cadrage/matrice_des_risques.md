@@ -1,0 +1,8 @@
+
+# Matrice des Risques : NutriScope
+
+|Impact / Probabilité |  Forte Probabilité | Moyenne Probabilité | Faible Probabilité 
+| :--- | :---: | :---: | :---: |
+| **Fort Impact** | <kbd>❌</kbd><strong> <p style="color: #8B0000;">Risques Majeurs</p></strong><strong> - Données inaccessibles : </strong> Les données sources ne sont plus disponibles ! | <kbd>🔥</kbd> <strong> <p style="color: #ee1919;">Risques Élevés</p></strong> <strong>- Données incorrectes ou incomplètes donnant des explications erronées. | <kbd>⚠️</kbd> <strong> <p style="color: #f75018f9;">Risques Critiques</p></strong> <strong>- Non respect des lois sur la protection des données : (RGPD et AI Act). |
+| **Moyen Impact** | <kbd>🔥</kbd>  <strong> <p style="color: #ee1919;">Risques  Élevés</p></strong> <strong>- Faible adoption des alternatives proposées</strong> (Les utilisateurs n'utilisent pas les alternatives proposées ou ne changent pas leurs habitudes).| <kbd>⚡</kbd> <strong><p style="color: #c5db00;">Risques Tactiques</p></strong><strong>- Non respect des engagements et retard de livraison. </strong>| <kbd>📌</kbd> <strong> <p style="color: #016a2b;">Risques Modérés</p></strong>- Coûts de changement de licences ou du cloud supérieur au budget. |
+| **Faible Impact** | <kbd>📌</kbd>  <strong> <p style="color: #016a2b;">Risques  Modérés</p></strong>- Mises à jour liées aux outils et dépendances. <br/>- Indisponibilité de connexions et d'outis; de serveur ou d'APIs.| <kbd>🌱</kbd><strong><p style="color: #e9f50a;">Risques Négligeables</p></strong> | <kbd>✅</kbd> <strong><p style="color: #05f915;">Risques Mineurs</p></strong>
