@@ -35,16 +35,17 @@ class PrepareData:
 
     def prepare_nutriscore_grade(self, df: pd.DataFrame) -> pd.DataFrame:
         #NA, unknown, not-applicable
-        valeurs_a_effacer = r'^\s*$|^na$|^unknown$|^not-applicable$'
+        to_delete = r'^\s*$|^na$|^unknown$|^not-applicable$'
         df['nutriscore_grade'] = (df['nutriscore_grade']
                                 .astype(str)
                                 .str.strip()
-                                .replace(valeurs_a_effacer, np.nan, regex=True))
+                                .replace(to_delete, np.nan, regex=True))
 
         df['nutriscore_grade'] = df['nutriscore_grade'].str.upper()
 
         return df
 
+    # retirer les prefix en:... fr:..., supprimer les null
     def prepare_categories_tags(self, df: pd.DataFrame) -> pd.DataFrame:
         df['categories_tags'] = df['categories_tags'].apply(
             lambda x: ";".join([t.split(":")[-1] for t in x if t != "en:null"]) 
@@ -54,6 +55,7 @@ class PrepareData:
 
         return df
 
+    # retirer les prefix, applatir les listes tag séparés par ;
     def prepare_brands_tags(self, df: pd.DataFrame) -> pd.DataFrame:
         df['brands_tags'] = df['brands_tags'].apply(
             lambda x: np.nan if not isinstance(x, (list, np.ndarray)) or len([t for t in x if t and str(t).split(':')[-1] not in ['null', 'None', '']]) == 0 
@@ -62,6 +64,7 @@ class PrepareData:
 
         return df
 
+    # applatir la liste séparé par ;
     def prepare_countries_tags(self, df: pd.DataFrame) -> pd.DataFrame:
         df['countries_tags'] = df['countries_tags'].apply(
             lambda x: ";".join([str(i) for i in x.tolist()]) if isinstance(x, np.ndarray) or (pd.notna(x) if not isinstance(x, (list, np.ndarray)) else True) else None

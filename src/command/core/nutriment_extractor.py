@@ -7,11 +7,6 @@ import json
 from src.command.core.execution_timer import ExecutionTimer
 
 class NutrimentExtractor:
-    TARGET_NUTRIMENT = {
-        'energy', 'sugars', 'saturated-fat', 'salt', 
-        'sodium', 'fiber', 'proteins', 'fruits-vegetables-legumes', 'fat'
-    }
-
     def __init__(self):
         self.batch_size = int(os.getenv("EXTRACT_BATCH_SIZE", "10000"))
         self.source_parquet = os.getenv("EXTRACT_OUTPUT_PARQUET_FILE")
@@ -20,10 +15,13 @@ class NutrimentExtractor:
         columns = os.getenv("EXTRACT_SELECTED_COLUMNS")
         self.selected_columns = columns.split(",") if columns else None
 
+        nutriments_columns = os.getenv("NUTRIMENT_COLUMNS")
+        self.nutriments_columns = nutriments_columns.split(",") if columns else None
+
         self.timer = ExecutionTimer()
 
     # TODO: convertir les valeurs dans les bonnes unités
-    def process_nutriment_batch(self, batch: pa.RecordBatch, target_nutriments: dict) -> pd.DataFrame:
+    def process_nutriment_batch(self, batch: pa.RecordBatch, target_nutriments: list) -> pd.DataFrame:
         raw_cells = batch.column('nutriments').to_pylist()
 
         extracted_rows = []
@@ -82,7 +80,7 @@ class NutrimentExtractor:
 
                 df_base_chunk = batch.select(base_columns).to_pandas()
 
-                df_nutrients_chunk = self.process_nutriment_batch(batch, self.TARGET_NUTRIMENT)
+                df_nutrients_chunk = self.process_nutriment_batch(batch, self.nutriments_columns)
 
                 df_combined_chunk = pd.concat([df_base_chunk, df_nutrients_chunk], axis=1)
                 all_chunks.append(df_combined_chunk)
