@@ -16,12 +16,12 @@ class LoadData:
         self.timer = ExecutionTimer()
 
     def get_dataframe(self) -> pd.DataFrame:
-        self.timer.log_step("Lecture du fichier Parquet (PyArrow)")
+        self.timer.log_step("Lecture du fichier Parquet")
         table = pq.read_table(self.source_parquet)
         df_final = table.to_pandas()
         self.timer.log_step(f"-> Extraction terminée ! Total : {len(df_final)} lignes.")
 
-        return df_final#.head(100)
+        return df_final
 
     def prepare(self) -> None:
         try:
@@ -29,7 +29,7 @@ class LoadData:
 
             nutriments_columns = [
                 sub_col 
-                for col in self.nutriments_columns 
+                for col in self.nutriments_columns
                 for sub_col in (col, col + '_unit')
             ]
 

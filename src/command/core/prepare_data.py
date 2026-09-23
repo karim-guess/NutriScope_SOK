@@ -157,8 +157,6 @@ class PrepareData:
         self.timer.log_step(f"Écriture du nouveau DataFrame dans {self.output_parquet}...")
         try:
             df_new.to_parquet(self.output_parquet, index=False)
-            # table_to_save = pa.Table.from_pandas(df)
-            # pq.write_table(table_to_save, self.output_parquet, compression='snappy')
         except Exception as e:
             print(f"Erreur lors de l'écriture du fichier de sortie '{self.output_parquet}' : {e}")
             raise
