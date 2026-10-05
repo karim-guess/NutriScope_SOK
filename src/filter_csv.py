@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from dotenv import load_dotenv
 import time
+import html
 from src.constant import CSV_SELECTED_NUTRIMENT_COLUMNS, CSV_SELECTED_COLUMNS, CSV_SELECTED_CATEGORIES
 
 load_dotenv()
@@ -25,7 +26,7 @@ chunk_iterator_csv = pd.read_csv(
     chunksize=10000,
     low_memory = False,
     on_bad_lines="skip",
-    usecols=USECOLS
+    usecols=USECOLS,
 )
 
 full_data_csv = []
@@ -56,7 +57,10 @@ df_new_csv = df_new_csv_fr.copy()
 Création du nouveau CSV filtré
 """
 print(f'Création du CSV filtré: {CSV_FILTERED}')
-df_new_csv.to_csv(CSV_FILTERED, index=False)
+df_new_csv.to_csv(
+    CSV_FILTERED,
+    index=False
+)
 
 execution_time = time.time() - start_time
 minutes = int(execution_time // 60)

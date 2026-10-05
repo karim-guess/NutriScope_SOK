@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from src.cleaning import (
     # REGLE_CATEGORIES_VIDE,
     REGLE_CORRIGER_ENERGIE,
@@ -83,14 +84,14 @@ def test_corriger_categories(categories_tordu):
 
     # Ligne 0 : Rayon complété à 'unknown'
     assert df.loc[0, "pnns_groups_1"] == "unknown"
-    assert df.loc[0, "categorie_vide"] == False
+    assert df.loc[0, "main_categorie_manquant"] == False
 
     # Ligne 1 : Dérivation de la catégorie principale depuis le dernier tag
     assert df.loc[1, "main_category"] == "en:biscuits"
-    assert df.loc[1, "categorie_vide"] == True
+    assert df.loc[1, "main_categorie_manquant"] == True
 
     # Ligne 2 : Drapeau catégorie vide activé
-    assert df.loc[2, "categorie_vide"] == True
+    assert df.loc[2, "main_categorie_manquant"] == True
     assert df.loc[2, "pnns_groups_1"] == "Beverages" # Conservé car le rayon est connu
 
     # Ligne 3 : Supprimée car pas de catégorie et rayon inconnu (inclassable)
@@ -114,18 +115,14 @@ def test_normaliser_textes(texte_tordu):
     assert pd.isna(df.loc[1, "product_name"])
     assert df.loc[1, "brands"] == "Nestlé"
 
-    # Ligne 2 & 3 : Nettoyage des grades inconnus (unknown et unknown_group deviennent NA)
-    assert pd.isna(df.loc[2, "nutriscore_grade"])
-    assert pd.isna(df.loc[1, "nova_group"])
-    assert pd.isna(df.loc[3, "nova_group"])
+    # Ligne 0 : Grade en minuscule, ligne 2 reste unknown
+    assert df.loc[0, "nutriscore_grade"] == "a"
+    assert df.loc[2, "nutriscore_grade"] == "unknown"
 
     # Vérification des métriques du compte rendu
     assert cr.details["noms_vides_nettoyes"] == 1
     assert cr.details["marques_harmonisees"] == 1     # La ligne 1 "nestlé" a été modifiée en "Nestlé"
-    assert cr.details["grades_unknown_nettoyes"] == 3 # Ligne 2 (nutriscore), Ligne 1 (nova), Ligne 3 (nova)
 
-import pandas as pd
-import pytest
 
 # RÈGLES GÉNÉRALES (typer_colonnes, borner_nutriments, dedupliquer_codes)
 @pytest.mark.parametrize("regle", TOUTES_LES_REGLES)

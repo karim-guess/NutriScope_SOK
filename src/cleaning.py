@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
-from src.constant import TEXT_TYPE, NUMERIC_TYPE, CSV_SELECTED_NUTRIMENT_COLUMNS
+import warnings
+from src.constant import TEXT_TYPE, NUMERIC_TYPE, CSV_SELECTED_NUTRIMENT_COLUMNS, STRATEGIE_PAR_DEFAUT, FLAG_COLUMNS
 
 KCAL_MAX = 900.0
 SEL_PAR_SODIUM = 2.5
@@ -69,7 +70,7 @@ def typer_colonnes(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRendu]:
 
 def borner_nutriments(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRendu]:
     """
-        Invalide (NA) les nutriments négatifs ou > 100 g/100 g.
+    Invalide (NA) les nutriments négatifs ou > 100 g/100 g.
     """
     resultat = df.copy()
     details: dict[str, int] = {}
@@ -79,14 +80,14 @@ def borner_nutriments(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRendu]:
         resultat[col] = resultat[col].mask(hors, np.nan)
 
     """
-        Invalide (NA) Sucres > Glucides + 0.5
+    Invalide (NA) Sucres > Glucides + 0.5
     """
     coherence_sucre = resultat["sugars_100g"] > (resultat["carbohydrates_100g"] + 0.5)
     details["sugars_incoherent_glucides"] = int(coherence_sucre.sum())
     resultat["sugars_100g"] = resultat["sugars_100g"].mask(coherence_sucre, np.nan)
 
     """
-        Invalide (NA) Acides Gras Saturés > Lipides + 0.5
+    Invalide (NA) Acides Gras Saturés > Lipides + 0.5
     """
     coherence_sat = resultat["saturated-fat_100g"] > (resultat["fat_100g"] + 0.5)
     details["saturated_incoherent_fat"] = int(coherence_sat.sum())
@@ -163,17 +164,11 @@ def normaliser_textes(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRendu]:
         else:
             resultat.loc[~mask_marque_valide, "brands"] = np.nan
 
-    # Nettoyage des grades (nutriscore_grade, nova_group)
-    colonnes_grades = ["nutriscore_grade", "nova_group"]
-    for col in colonnes_grades:
-        if col in resultat.columns:
-            resultat[col] = resultat[col].astype(str).str.strip().str.lower()
-            mask_unknown = resultat[col].isin(["unknown", "unknown_group", "nan", "none", ""])
-            details["grades_unknown_nettoyes"] += int(mask_unknown.sum())
-            resultat.loc[mask_unknown, col] = np.nan
+    # Nettoyage des grades
+    resultat['nutriscore_grade'] = resultat['nutriscore_grade'].str.lower()
 
     # Calcul des lignes touchées
-    colonnes_controlees = [c for c in ["product_name", "brands"] + colonnes_grades if c in df.columns]
+    colonnes_controlees = [c for c in ["product_name", "brands", "nutriscore_grade"] if c in df.columns]
     touchees = _lignes_modifiees(df, resultat, colonnes_controlees)
 
     return resultat, CompteRendu("normaliser_textes", len(df), len(resultat), touchees, details)
@@ -319,15 +314,20 @@ def traiter_categories_vides(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRend
     resultat = df.copy()
     details: dict[str, int] = {}
 
+    # VERIFICATION ET CONVERSION DES CHAINES VIDES EN NA
+    colonnes_texte = resultat.select_dtypes(include=['string', 'object']).columns
+    if not colonnes_texte.empty:
+        resultat[colonnes_texte] = resultat[colonnes_texte].replace(r'^\s*$', np.nan, regex=True)
+
     # Gestion du rayon (pnns_groups_1) manquant -> 'unknown'
     mask_rayon_manquant = resultat["pnns_groups_1"].isna() | (resultat["pnns_groups_1"].astype(str).str.strip() == "")
     resultat.loc[mask_rayon_manquant, "pnns_groups_1"] = "unknown"
     details["rayon_manquant_unknown"] = int(mask_rayon_manquant.sum())
 
-    # Gestion du drapeau 'categorie_vide'
+    # Gestion du drapeau 'categorie_manquant'
     mask_main_manquant = resultat["main_category"].isna() | (resultat["main_category"].astype(str).str.strip() == "")
     resultat.loc[mask_main_manquant, "main_category"] = np.nan
-    resultat["categorie_vide"] = mask_main_manquant
+    resultat["main_categorie_manquant"] = mask_main_manquant
     details["drapeau_categorie_vide_ajoute"] = int(mask_main_manquant.sum())
     
     # Extraction du dernier tag
@@ -357,8 +357,109 @@ def traiter_categories_vides(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRend
 
     return resultat, CompteRendu("traiter_categories_vides", len(df), len(resultat), touchees, details)
 
+def strategie_manquants(df: pd.DataFrame, strategie: dict[str, str]) -> tuple[pd.DataFrame, CompteRendu]:
+    """
+    Applique la stratégie de traitement des valeurs manquantes par colonne.
+    
+    Vocabulaire fermé autorisé : 
+    - 'garder' : Laisse les NaN inchangés.
+    - 'drapeau' : Crée une colonne booléenne <colonne>_manquant et garde le NaN.
+    - 'constante:<v>' : Remplace les NaN par la valeur <v>.
+    - 'supprimer_colonne' / 'supprimer la colonne' : Retire la colonne.
+    - 'mediane_rayon' / 'mode' : Interdit ici (bloqué post-split).
+    """
+    resultat = df.copy()
+    details: dict[str, int] = {}
+    
+    colonnes_traitees = 0
+    colonnes_supprimees = 0
+    drapeaux_crees = 0
+    lignes_nutriments_supprimees = 0
+    
+    decisions_valides = {'garder', 'drapeau', 'supprimer_colonne', 'mediane_rayon', 'mode'}
+
+    # Initialisation des colonnes drapeaux
+    resultat[FLAG_COLUMNS] = False
+
+    # Application de la stratégie colonne par colonne
+    for col, decision in strategie.items():
+        if col not in resultat.columns:
+            continue
+            
+        is_constante = decision.startswith("constante:")
+        if not is_constante and decision not in decisions_valides:
+            raise ValueError(f"Décision inconnue '{decision}' pour la colonne '{col}'.")
+        
+        if decision == 'garder':
+            continue
+            
+        elif decision == 'drapeau':
+            resultat[f"{col}_manquant"] = resultat[col].isna()
+            drapeaux_crees += 1
+            colonnes_traitees += 1
+            
+        elif is_constante:
+            valeur_str = decision.split(":", 1)[1]
+            try:
+                valeur = float(valeur_str) if '.' in valeur_str else int(valeur_str)
+            except ValueError:
+                valeur = valeur_str
+            resultat[col] = resultat[col].fillna(valeur)
+            colonnes_traitees += 1
+            
+        elif decision == 'supprimer_colonne':
+            resultat = resultat.drop(columns=[col])
+            colonnes_supprimees += 1
+            
+        # elif decision in ['mediane_rayon', 'mode']:
+        #     warnings.warn(
+        #         f"L'imputation statistique ({decision}) pour '{col}' a été ignorée avant le split Train/Test.",
+        #         UserWarning
+        #     )
+
+    # Suppression des lignes sans aucun nutriment clé
+    taille_avant = len(resultat)
+    resultat = resultat.dropna(subset=CSV_SELECTED_NUTRIMENT_COLUMNS, how='all')
+    lignes_nutriments_supprimees = taille_avant - len(resultat)
+
+    # Suppression des lignes completeness < 0.25
+    taille_avant_filtre = len(resultat)
+    resultat = resultat[resultat["completeness"] >= 0.25]
+    lignes_completeness_inf_025_supprimees = taille_avant_filtre - len(resultat)
+
+    # On identifie les colonnes et les INDEX (lignes) présents dans les deux DataFrames
+    colonnes_communes = [c for c in df.columns if c in resultat.columns]
+    index_communs = df.index.intersection(resultat.index)
+    
+    # On extrait des sous-ensembles strictement identiques en termes de labels (lignes et colonnes)
+    df_aligne = df.loc[index_communs, colonnes_communes]
+    resultat_aligne = resultat.loc[index_communs, colonnes_communes]
+
+    # L'appel à _lignes_modifiees se fait désormais sans risque de désalignement
+    touchees = _lignes_modifiees(df_aligne, resultat_aligne, colonnes_communes)
+    
+    # Si des lignes entières ont été supprimées, elles comptent comme touchées
+    if lignes_nutriments_supprimees > 0:
+        touchees += lignes_nutriments_supprimees
+
+    details = {
+        "colonnes_analysees": len(strategie),
+        "colonnes_traitees": colonnes_traitees,
+        "colonnes_supprimees": colonnes_supprimees,
+        "drapeaux_crees": drapeaux_crees,
+        "lignes_nutriments_cles_supprimees": lignes_nutriments_supprimees,
+        "lignes_completeness_inf_025_supprimees": lignes_completeness_inf_025_supprimees
+
+    }
+
+    return resultat, CompteRendu("strategie_manquants", len(df), len(resultat), touchees, details)
+
 def nettoyer(df: pd.DataFrame) -> tuple[pd.DataFrame, list]:
     cr_list = []
+
+    # 1 ligne pnns_groups_1 = 'italie' ???
+    masque_italie = df["pnns_groups_1"] == "italie"
+    df = df.loc[~masque_italie]
 
     df, cr = normaliser_unites(df)
     cr_list.append(cr)
@@ -379,6 +480,9 @@ def nettoyer(df: pd.DataFrame) -> tuple[pd.DataFrame, list]:
     cr_list.append(cr)
 
     df, cr = typer_colonnes(df)
+    cr_list.append(cr)
+
+    df, cr = strategie_manquants(df, STRATEGIE_PAR_DEFAUT)
     cr_list.append(cr)
 
     return df, cr_list

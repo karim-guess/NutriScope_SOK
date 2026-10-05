@@ -4,7 +4,7 @@ import numpy as np
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 import time
-from src.constant import CSV_SELECTED_NUTRIMENT_COLUMNS, CSV_SELECTED_COLUMNS, TEXT_TYPE, NUMERIC_TYPE
+from src.constant import CSV_SELECTED_NUTRIMENT_COLUMNS, CSV_SELECTED_COLUMNS, TEXT_TYPE, NUMERIC_TYPE, FLAG_COLUMNS, FINAL_SELECTED_COLUMNS
 
 load_dotenv()
 
@@ -40,12 +40,17 @@ def load_csv(csv_source: str) -> None:
 
     return df
 
-def execute(df: pd.DataFrame) -> None:
+def execute(df: pd.DataFrame, all_columns: bool = False) -> None:
     print('Début du chargement en BDD')
     start_time = time.time()
 
     df.insert(0, 'product_id', range(1, len(df) + 1))
-    df_products = df[CSV_SELECTED_COLUMNS + ['product_id']].copy()
+    if all_columns == False:
+        selected_columns = CSV_SELECTED_COLUMNS + ['product_id']
+    else:
+        selected_columns = FINAL_SELECTED_COLUMNS + ['product_id'] + FLAG_COLUMNS
+
+    df_products = df[selected_columns].copy()
 
     """
     Marques
@@ -100,7 +105,7 @@ def execute(df: pd.DataFrame) -> None:
     df_brands = df_brands.rename(columns={'brand_id': 'id', 'brands': 'name'}).copy()
     df_categories = df_categories[['category_id', 'main_category']].rename(columns={'category_id': 'id', 'main_category': 'name'}).copy()
 
-    df_products = df_merge_products_categories[CSV_SELECTED_COLUMNS + ['product_id', 'brand_id', 'category_id']].rename(
+    df_products = df_merge_products_categories[selected_columns + ['brand_id', 'category_id']].rename(
         columns={
             'product_name': 'name',
             'product_id': 'id'
@@ -110,6 +115,7 @@ def execute(df: pd.DataFrame) -> None:
     """
     Nutriments
     """
+    df_nutriments = df[['product_id'] + CSV_SELECTED_NUTRIMENT_COLUMNS].copy()
     df_nutriments = df[['product_id'] + CSV_SELECTED_NUTRIMENT_COLUMNS].rename(
         columns={
             'energy-kcal_100g': 'energy_kcal_100g',
@@ -130,6 +136,7 @@ def execute(df: pd.DataFrame) -> None:
     load('product', df_products)
 
     load('nutriment', df_nutriments)
+
 
     execution_time = time.time() - start_time
     minutes = int(execution_time // 60)

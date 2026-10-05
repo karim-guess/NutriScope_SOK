@@ -44,12 +44,10 @@ CREATE TABLE product (
     created_t REAL NULL,
     countries_tags TEXT NULL,
     nutriscore_score REAL NULL, 
-    nutriscore_grade TEXT NULL,
+    nutriscore_grade TEXT NULL CHECK (nutriscore_grade IN ('a', 'b', 'c', 'd', 'e', 'unknown', 'not-applicable')),
     quantity TEXT NULL,
     brands TEXT NULL,
     categories_tags TEXT NULL,
-    labels_tags TEXT NULL,
-    stores TEXT NULL,
     ingredients_text TEXT NULL,
     allergens TEXT NULL,
     serving_size TEXT NULL,
@@ -63,9 +61,25 @@ CREATE TABLE product (
     image_url TEXT NULL,
     category_id INT NULL,
     brand_id INT NULL,
+    product_name_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    brands_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    quantity_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    categories_tags_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    main_category_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    ingredients_text_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    allergens_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    additives_n_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    fat_100g_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    saturated_fat_100g_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    carbohydrates_100g_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    fiber_100g_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    proteins_100g_manquant BOOLEAN NOT NULL DEFAULT FALSE,
+    fruits_vegetables_legumes_100g_manquant BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT fk_product_category FOREIGN KEY (category_id) REFERENCES category(id) ON DELETE SET NULL,
     CONSTRAINT fk_product_brand FOREIGN KEY (brand_id) REFERENCES brand(id) ON DELETE SET NULL
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_product_code ON product(code);
 
 -- Création de la table 'nutriment_100g'
 CREATE TABLE nutriment (

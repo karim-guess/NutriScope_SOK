@@ -21,10 +21,11 @@ NUMERIC = NUMERIC_TYPE + CSV_SELECTED_NUTRIMENT_COLUMNS
 print('Lancement pipeline')
 start_time = time.time()
 
+print('Chargement du CSV filtré')
 df = pd.read_csv(
     CSV_SOURCE,
     dtype={c: "string" for c in TEXT_TYPE},
-    converters={col: lambda val: pd.to_numeric(val, errors="coerce") for col in NUMERIC}
+    converters={col: lambda val: pd.to_numeric(val, errors="coerce") for col in NUMERIC},
 )
 
 print('Application des règles')
@@ -37,7 +38,7 @@ print('Création tables BDD')
 execute_create(SQL_FILE_BDD)
 
 print('Chargement en BDD')
-execute_load(df_new)
+execute_load(df_new, True)
 
 print('Requêtes de contrôle:')
 execute_control()

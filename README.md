@@ -36,3 +36,8 @@ python -m pytest -q
 python -m pytest -v tests/test_regles.py
 python -m pytest -v -s tests/test_regles.py::test_typer_colonnes
 ```
+
+**Génération notebooks/eda_reference.ipynb**
+```bash
+jupyter nbconvert --to notebook --execute --inplace notebooks/eda_reference.ipynb
+```

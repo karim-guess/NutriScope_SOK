@@ -92,25 +92,40 @@ def texte_tordu():
         "product_name": [
             "chocolat au lait",  # Ligne 0 -> Devient "CHOCOLAT AU LAIT"
             "none",              # Ligne 1 -> Devient NaN (compte pour noms_vides_nettoyes)
-            "Biscuit",           # Ligne 2
-            "Jus d'orange"       # Ligne 3
+            "Biscuit",
+            "Jus d'orange"
         ],
         "brands": [
             "Nestlé",            # Ligne 0 -> Forme de référence 1
             "nestlé",            # Ligne 1 -> Modifiée en "Nestlé" (compte pour marques_harmonisees)
-            "Danone",            # Ligne 2
+            "Danone",
             "Nestlé"             # Ligne 3 -> Forme de référence 2 (fait de 'Nestlé' la graphie majoritaire)
         ],
         "nutriscore_grade": [
-            "a",                 # Ligne 0
-            "b",                 # Ligne 1
-            "unknown",           # Ligne 2 -> Devient NaN (compte pour grades_unknown_nettoyes)
-            "c"                  # Ligne 3
-        ],
-        "nova_group": [
-            "4",                 # Ligne 0
-            "unknown_group",     # Ligne 1 -> Devient NaN (compte pour grades_unknown_nettoyes)
-            "3",                 # Ligne 2
-            "  nan  "            # Ligne 3 -> Devient NaN (compte pour grades_unknown_nettoyes)
+            "A",                 # Ligne 0 -> minuscule
+            "b",
+            "unknown",           # Ligne 2 -> conservé
+            "c"
         ]
     })
+
+@pytest.fixture
+def mock_food_data():
+    """
+    Crée un DataFrame avec :
+    - 'Rayon_A' : 4 produits (Supérieur ou égal au min_n personnalisé du test = 3)
+    - 'Rayon_B' : 2 produits (Inférieur au min_n personnalisé du test = 3) -> DOIT ÊTRE ÉCARTÉ
+    """
+    data = {
+        "pnns_groups_1": [
+            "Rayon_A",
+            "Rayon_A",
+            "Rayon_A",
+            "Rayon_A",
+            "Rayon_B",
+            "Rayon_B",
+        ],
+        "sugars_100g": [10.0, 20.0, 30.0, 40.0, 5.0, 50.0],
+        "salt_100g": [1.0, 2.0, 3.0, 4.0, 0.5, 8.0],
+    }
+    return pd.DataFrame(data)
