@@ -41,3 +41,18 @@ python -m pytest -v -s tests/test_regles.py::test_typer_colonnes
 ```bash
 jupyter nbconvert --to notebook --execute --inplace notebooks/eda_reference.ipynb
 ```
+
+**Conversion parquet**
+```bash
+python -m src.convert_parquet
+```
+
+**Conversion parquet: requêtes de contrôle**
+```bash
+python -m src.run_queries
+```
+
+**Export features**
+```bash
+python -m src.export_features --input-dir data/parquet/produits --output-dir ./exports --force
+```

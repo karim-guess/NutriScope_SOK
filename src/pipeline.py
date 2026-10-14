@@ -14,6 +14,7 @@ from src.control_query import execute as execute_control
 load_dotenv()
 
 CSV_SOURCE = os.getenv('CSV_FILE_FILTERED')
+CSV_FILE_CLEAN = os.getenv('CSV_FILE_CLEAN')
 SQL_FILE_BDD = os.getenv("SQL_FILE_BDD_PIPELINE")
 NUMERIC = NUMERIC_TYPE + CSV_SELECTED_NUTRIMENT_COLUMNS
 
@@ -33,6 +34,9 @@ df_new, cr_list = nettoyer(df)
 
 print('Génération du rapport')
 generer_rapport(df, df_new, cr_list, './docs/data/rapport_nettoyage.md')
+
+print('Création du CSV propre')
+df_new.to_csv(CSV_FILE_CLEAN, index=False, na_rep='N/A')
 
 print('Création tables BDD')
 execute_create(SQL_FILE_BDD)

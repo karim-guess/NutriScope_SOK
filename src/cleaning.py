@@ -449,7 +449,6 @@ def strategie_manquants(df: pd.DataFrame, strategie: dict[str, str]) -> tuple[pd
         "drapeaux_crees": drapeaux_crees,
         "lignes_nutriments_cles_supprimees": lignes_nutriments_supprimees,
         "lignes_completeness_inf_025_supprimees": lignes_completeness_inf_025_supprimees
-
     }
 
     return resultat, CompteRendu("strategie_manquants", len(df), len(resultat), touchees, details)
@@ -484,6 +483,9 @@ def nettoyer(df: pd.DataFrame) -> tuple[pd.DataFrame, list]:
 
     df, cr = strategie_manquants(df, STRATEGIE_PAR_DEFAUT)
     cr_list.append(cr)
+
+    df = df.replace(to_replace=["", " ", "N/A"], value=pd.NA)
+    # df['created_t'] = pd.to_numeric(df['created_t'], errors='coerce').astype('Int64')
 
     return df, cr_list
 

@@ -1,0 +1,82 @@
+{
+    "licence": "ODbL (Open Database License) - Open Food Facts",
+    "nombre_de_lignes": 536188,
+    "cle_de_partition": [
+        "rayon"
+    ],
+    "compression": "ZSTD",
+    "colonnes": {
+        "code": {
+            "type": "VARCHAR",
+            "justification": "Identifiant unique du produit (code-barres), stocké en texte pour conserver les zéros initiaux."
+        },
+        "created_t": {
+            "type": "BIGINT",
+            "justification": "Horodatage de création au format Unix Epoch numérique permettant un stockage binaire compact."
+        },
+        "pnns_groups_1": {
+            "type": "VARCHAR",
+            "justification": "Groupe nutritionnel brut d'origine servant de base à la catégorisation du catalogue."
+        },
+        "rayon": {
+            "type": "VARCHAR",
+            "justification": "Clé de partition nettoyée en minuscules et sans caractères spéciaux générée à partir de pnns_groups_1."
+        },
+        "additives_n": {
+            "type": "SMALLINT",
+            "justification": "Nombre entier restreint comptabilisant les additifs détectés dans la recette du produit."
+        },
+        "nutriscore_score": {
+            "type": "SMALLINT",
+            "justification": "Score d'évaluation nutritionnelle brut allant de -15 à +40 servant à déterminer la note finale."
+        },
+        "nova_group": {
+            "type": "TINYINT",
+            "justification": "Classification du degré d'ultra-transformation des aliments codée de 1 à 4 sur un octet."
+        },
+        "energy_100g": {
+            "type": "FLOAT",
+            "justification": "Apport énergétique total exprimé en kilojoules (kJ) pour une portion de 100 grammes."
+        },
+        "energy-kcal_100g": {
+            "type": "FLOAT",
+            "justification": "Apport énergétique converti et exprimé en kilocalories (kcal) pour une portion de 100 grammes."
+        },
+        "fat_100g": {
+            "type": "FLOAT",
+            "justification": "Matières grasses globales en grammes mesurées pour 100 grammes de produit."
+        },
+        "saturated-fat_100g": {
+            "type": "FLOAT",
+            "justification": "Acides gras saturés en grammes pour 100 grammes, indicateur critique pour le profil nutritionnel."
+        },
+        "carbohydrates_100g": {
+            "type": "FLOAT",
+            "justification": "Teneur globale en glucides (sucres complexes et simples) en grammes pour 100 grammes."
+        },
+        "sugars_100g": {
+            "type": "FLOAT",
+            "justification": "Quantité spécifique de sucres simples en grammes pour 100 grammes, fortement pénalisée dans le calcul."
+        },
+        "fiber_100g": {
+            "type": "FLOAT",
+            "justification": "Teneur en fibres alimentaires en grammes pour 100 grammes, composante valorisée par l'algorithme."
+        },
+        "proteins_100g": {
+            "type": "FLOAT",
+            "justification": "Masse totale de protéines en grammes pour 100 grammes de produit fini."
+        },
+        "salt_100g": {
+            "type": "FLOAT",
+            "justification": "Équivalent en sel de cuisine calculé en grammes pour 100 grammes de produit."
+        },
+        "sodium_100g": {
+            "type": "FLOAT",
+            "justification": "Teneur en sodium pur en grammes pour 100 grammes servant de base légale au calcul du sel."
+        },
+        "fruits-vegetables-legumes_100g": {
+            "type": "FLOAT",
+            "justification": "Pourcentage de composants végétaux sains inclus pour bonifier le score nutritionnel global."
+        }
+    }
+}

@@ -4,7 +4,7 @@
 Données issues de la base de données ouverte [Open Food Facts][https://openfoodfacts.org](https://openfoodfacts.org).  
 Ces données sont publiées sous la licence [Open Database License (ODbL)][https://opendatacommons.org](https://opendatacommons.org).
     
-**Généré le :** 05/10/2026 à 08:43
+**Généré le :** 06/10/2026 à 16:41
 
 ### Volumetrie
 - **Avant:** 1261274 lignes, 33 colonnes

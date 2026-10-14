@@ -1,5 +1,7 @@
 # Custom rules
 wip/
+data/parquet
+exports
 
 
 # Byte-compiled / optimized / DLL files
