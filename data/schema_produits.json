@@ -14,6 +14,10 @@
             "type": "BIGINT",
             "justification": "Horodatage de création au format Unix Epoch numérique permettant un stockage binaire compact."
         },
+        "last_modified_t": {
+            "type": "BIGINT",
+            "justification": "Horodatage de dernière modification au format Unix Epoch numérique permettant un stockage binaire compact."
+        },
         "pnns_groups_1": {
             "type": "VARCHAR",
             "justification": "Groupe nutritionnel brut d'origine servant de base à la catégorisation du catalogue."

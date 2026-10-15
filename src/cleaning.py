@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 from pathlib import Path
 import warnings
-from src.constant import TEXT_TYPE, NUMERIC_TYPE, CSV_SELECTED_NUTRIMENT_COLUMNS, STRATEGIE_PAR_DEFAUT, FLAG_COLUMNS
+from src.constant import TEXT_TYPE, NUMERIC_TYPE, CSV_SELECTED_NUTRIMENT_COLUMNS, STRATEGIE_PAR_DEFAUT, FLAG_COLUMNS, DATETIME_TYPE
 
 KCAL_MAX = 900.0
 SEL_PAR_SODIUM = 2.5
@@ -55,8 +55,10 @@ def typer_colonnes(df: pd.DataFrame) -> tuple[pd.DataFrame, CompteRendu]:
         resultat[col] = resultat[col].astype("string")
     for col in NUMERIC:
         resultat[col] = resultat[col].astype("float64")
+    for col in DATETIME_TYPE:
+        resultat[col] = pd.to_datetime(resultat[col])
 
-    colonnes_controlees = TEXT_TYPE + NUMERIC
+    colonnes_controlees = TEXT_TYPE + NUMERIC + DATETIME_TYPE
     touchees = _lignes_modifiees(df, resultat, colonnes_controlees)
     
     details = {"colonnes_typees": len(colonnes_controlees)}
@@ -508,7 +510,8 @@ def generer_rapport(avant: pd.DataFrame, apres: pd.DataFrame, journal: list[Comp
 ---
 ### Crédits
 Données issues de la base de données ouverte [Open Food Facts][https://openfoodfacts.org](https://openfoodfacts.org).  
-Ces données sont publiées sous la licence [Open Database License (ODbL)][https://opendatacommons.org](https://opendatacommons.org).
+Ces données sont publiées sous la licence [Open Database License (ODbL)][https://opendatacommons.org](https://opendatacommons.org).  
+Données : © Open Food Facts contributors — ODbL.
     """]
 
     date = datetime.now().strftime("%d/%m/%Y à %H:%M")

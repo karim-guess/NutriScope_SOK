@@ -9,7 +9,9 @@ from src.cleaning import CompteRendu, nettoyer, generer_rapport
 from src.constant import CSV_SELECTED_NUTRIMENT_COLUMNS, TEXT_TYPE, NUMERIC_TYPE
 from src.create_db import execute as execute_create
 from src.load_db import execute as execute_load
-from src.control_query import execute as execute_control
+from src.convert_parquet import execute as execute_parquet
+from src.run_queries import execute_queries
+from src.export_features import execute as execute_export
 
 load_dotenv()
 
@@ -44,9 +46,17 @@ execute_create(SQL_FILE_BDD)
 print('Chargement en BDD')
 execute_load(df_new, True)
 
-print('Requêtes de contrôle:')
-execute_control()
+print('Requêtes de contrôle PGSQL:')
+execute_queries()
 
+print('Génération des fichiers par rayons .parquet')
+execute_parquet()
+
+print('Requêtes de contrôle .parquet:')
+execute_queries('parquet')
+
+print('Génération du fichier features .parquet')
+execute_export()
 
 execution_time = time.time() - start_time
 minutes = int(execution_time // 60)

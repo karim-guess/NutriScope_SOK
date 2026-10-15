@@ -42,6 +42,7 @@ CREATE TABLE product (
     code TEXT NOT NULL,
     name TEXT NULL,
     created_t REAL NULL,
+    last_modified_t REAL NULL,
     countries_tags TEXT NULL,
     nutriscore_score REAL NULL, 
     nutriscore_grade TEXT NULL,

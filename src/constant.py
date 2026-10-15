@@ -20,6 +20,7 @@ CSV_SELECTED_COLUMNS = [
     'serving_size',
     'completeness',
     'created_t',
+    'last_modified_t',
     'image_url'
 ]
 FLAG_COLUMNS = [
@@ -58,6 +59,7 @@ FINAL_SELECTED_COLUMNS = [
     'serving_size',
     'completeness',
     'created_t',
+    'last_modified_t',
     'image_url'
 ]
 CSV_SELECTED_NUTRIMENT_COLUMNS = [
@@ -108,6 +110,10 @@ NUMERIC_TYPE = [
     "nova_group",
     "nutriscore_score",
     "completeness"
+]
+DATETIME_TYPE = [
+    'created_t',
+    'last_modified_t'
 ]
 MORE_10_PERCENT_MISSING = [
     'product_name',

@@ -2,13 +2,14 @@
 ---
 ### Crédits
 Données issues de la base de données ouverte [Open Food Facts][https://openfoodfacts.org](https://openfoodfacts.org).  
-Ces données sont publiées sous la licence [Open Database License (ODbL)][https://opendatacommons.org](https://opendatacommons.org).
+Ces données sont publiées sous la licence [Open Database License (ODbL)][https://opendatacommons.org](https://opendatacommons.org).  
+Données : © Open Food Facts contributors — ODbL.
     
-**Généré le :** 06/10/2026 à 16:41
+**Généré le :** 14/10/2026 à 17:00
 
 ### Volumetrie
-- **Avant:** 1261274 lignes, 33 colonnes
-- **Après:** 536188 lignes, 48 colonnes
+- **Avant:** 1261274 lignes, 34 colonnes
+- **Après:** 536188 lignes, 49 colonnes
     
 ### Compte rendu du nettoyage
 
@@ -84,7 +85,7 @@ marques_harmonisees: 42682
 **Règle:** typer_colonnes  
 **Avant:** 634321 lignes  
 **Après:** 634321 lignes  
-**Modifiée(s):** 0 lignes(s)  
+**Modifiée(s):** 634321 lignes(s)  
 **Détails:**  
 statut: le DataFrame à été modifié
         
